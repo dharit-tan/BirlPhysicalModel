@@ -1,5 +1,7 @@
 # BirlPhysicalModel
 
-Thesis project by Dharit Tantiviramanond\n
-Princeton University\n
-Advisor: Prof. Jeffrey Snyder\n
+Thesis project by Dharit Tantiviramanond
+
+Princeton University
+
+Advisor: Prof. Jeffrey Snyder
