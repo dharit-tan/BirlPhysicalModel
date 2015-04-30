@@ -48,7 +48,7 @@ BlowHoleBiCVariableTH t => Gain g1 => dac;
 // harmonic minor scale
 (622.25, 587.33, 523.25, 493.88, 415.30, 392.00, 349.23, 311.13, 293.66, 261.63, 246.94) => t.setCustomTuning;
 
-4 => t.tuning;
+0 => t.tuning;
 440 => float Fc;
 Fc => t.setFundamental;
 
