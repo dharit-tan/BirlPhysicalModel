@@ -6,6 +6,16 @@ Princeton University
 
 Advisor: Prof. Jeffrey Snyder
 
+Short description:
+This project implements a physical model of an acoustic tube with
+* Continuous tonehole control - Users can "half-close" toneholes instead of being limited to fully closed or fully open.
+* User-defined physical parameters - Physical specifications of the model (length of bore, size of toneholes) can be controlled by the user.
+* Tuning system - A tuning model that helps users choose suitable physical parameters based on a desired tuning system and fundamental frequency.
+
+You can read the report I wrote for my thesis (included in this repo) for more information. To get up and running quickly,
+install the ChuGin and check out some of the example ChucK patches (`AxiomBirl.ck` is a good place to start).
+
+
 Dependencies:
 * Download and install ChucK and MiniAudicle: http://chuck.cs.princeton.edu/release/
 * Download the ChuGin source code: https://github.com/spencersalazar/chugins
