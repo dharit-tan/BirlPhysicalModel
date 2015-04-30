@@ -77,7 +77,7 @@ BirlPhysicalModel t => dac;
 (570.6, 523.25, 479.82, 440.0, 403.48, 369.99, 339.28, 311.13, 285.30, 261.63, 239.9) => t.setCustomTuning;
 
 4 => t.tuning;
-239.9 => float Fc;
+440 => float Fc;
 
 Fc => t.setFundamental;
 0.0 => t.shaper;
