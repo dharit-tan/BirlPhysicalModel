@@ -449,8 +449,8 @@ SAMPLE tick(SAMPLE in)
                     // // Reflection = Inversion + gain reduction + lowpass filtering.
                     // bell = inputSVFLP(lp2_, bell);
                     // bell = inputDCFilter(dcBlocker2_, bell);
-                    // bellReflected = bell * -0.995;
-                    bellReflected = filter_.tick(bell * -0.995);
+                    bellReflected = bell * -0.995;
+                    // bellReflected = filter_.tick(bell * -0.995);
                 }
             }
 
@@ -484,12 +484,8 @@ SAMPLE tick(SAMPLE in)
         // debug("range: %f - %f\n", min, max);
         // debug("\n");
         
-        // Check for pre-clip range.
+        // Clipping, account for oversampling, and gain.
         outsamp /= (double) OVERSAMPLE;
-        outsamp = clip(outsamp, -1.0, 1.0);
-        // outsamp = inputBiquad(biquad_, outsamp);
-        
-        // Clipping and gain.
         outsamp = tanhClip(outsamp);
         outsamp *= outputGain_;
         return outsamp;
