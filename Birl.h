@@ -22,6 +22,8 @@ static const int OVERSAMPLE = 2;
 const double C_cm = 34500.0;
 const double C_m = 345.0;
 const double SRATE = 44100.0;
+const double reedTableOffset = 0.7;
+const double reedTableSlope = -0.3;
 /* const double MIN_D1 = 0.05; */
 
 #endif

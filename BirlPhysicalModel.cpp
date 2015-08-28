@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include <limits.h>
 
-#include "ReedTable.h"
+// #include "ReedTable.h"
 #include "OneZero.h"
 #include "PoleZero.h"
 #include "Noise.h"
@@ -350,8 +350,8 @@ public:
         setTuning(EQUAL_TEMPERED);
         tune(440.0);
         
-        reedTable_.setOffset( 0.7 );
-        reedTable_.setSlope( -0.3 );
+        // reedTable_.setOffset( 0.7 );
+        // reedTable_.setSlope( -0.3 );
         
         dcBlocker_ = initDCFilter(0.995);
         dcBlocker2_ = initDCFilter(0.995);
@@ -406,7 +406,7 @@ public:
 
             // Calculate the differential pressure = reflected - mouthpiece pressures
             double pressureDiff = accessDelayLine(tubes_[0]->lower) - breath;
-            double reedLookup = pressureDiff * reedTable_.tick( pressureDiff );
+            double reedLookup = pressureDiff * reedTable( pressureDiff );
             breath = tanhClip(breath + reedLookup);
             if (breath >= 1 || breath <= -1) {
                 printf("breath going out of bounds of -1 to 1: %f\n", breath);
@@ -512,7 +512,7 @@ protected:
     
     Tube *tubes_[MAX_TUBES];
     stk::PoleZero *toneHoles_[MAX_TONEHOLES];
-    stk::ReedTable reedTable_;
+    // stk::ReedTable reedTable_;
     stk::OneZero   filter_;
     stk::Noise     noise_;
     DCFilter *dcBlocker_;

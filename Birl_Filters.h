@@ -66,6 +66,7 @@ static PoleZero *initPoleZero() {
     pz->x1 = 0.0;
     pz->x2 = 0.0;
     pz->z1 = 0.0;
+    return pz;
 }
 
 static void setCoeffsPoleZero(PoleZero *pz, double b0, double b1, double a1) {
@@ -197,6 +198,13 @@ static double shaper(double input, double m_drive) {
     double shaperOut = w*(c+ 0.05*xc2)*(m_drive + 0.75);
     shaperOut *= 0.5;    // post_scale
     return shaperOut;
+}
+
+static double reedTable(double input) {
+    double output = reedTableOffset + (reedTableSlope * input);
+    if ( output > 1.0) output = 1.0;
+    if ( output < -1.0) output = -1.0;
+    return output;
 }
 
 #endif
