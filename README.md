@@ -25,7 +25,7 @@ Installation:
 * Run `make osx && sudo make install` to install the ChuGin.
 * You should now be able to use the `BirlPhysicalModel` object in ChucK patches.
 
-Some example ChuCk patches included in this repo:
+Some example ChucK patches included in this repo:
 * AxiomBirl.ck: A setup I used during testing that connects a model to my M-Audio Axiom 49 controller.
 * BirlFinal.ck: The default setup used to connect with the Birl controller.
 * Birl2Octaves.ck: A test setup that adds a 2nd octave by running two instances of `BirlPhysicalModel` at two different octaves and adding an interpolating mix control between the two.
