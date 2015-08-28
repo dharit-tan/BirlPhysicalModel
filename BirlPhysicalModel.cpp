@@ -384,7 +384,7 @@ public:
     //     // return inputSVFLP(lp_, noise_.tick());
     // }
     
-    SAMPLE tick(SAMPLE in)
+SAMPLE tick(SAMPLE in)
     {
         double breathInterp[OVERSAMPLE];
         for (int i = 0; i < OVERSAMPLE; i++) {
@@ -486,11 +486,8 @@ public:
         
         // Check for pre-clip range.
         outsamp /= (double) OVERSAMPLE;
-        if (outsamp < min)
-            min = outsamp;
-        else if (outsamp > max)
-            max = outsamp;
-        outsamp = inputBiquad(biquad_, outsamp);
+        outsamp = clip(outsamp, -1.0, 1.0);
+        // outsamp = inputBiquad(biquad_, outsamp);
         
         // Clipping and gain.
         outsamp = tanhClip(outsamp);
