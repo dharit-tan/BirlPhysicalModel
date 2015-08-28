@@ -139,9 +139,15 @@ public:
         printf("LC: %d\n", LC);
 
         int prevlL = 0;
+        int correction = 0;
         // Must handle dummy separately.
         for (int i = 0; i < numTubes_ - 1; i++) {
             tubeLengths_[i] = calclL(d1, i, LS) - prevlL;
+
+            if (i == 0) {
+                tubeLengths_[i] -= correction;
+            }
+
             if (tubeLengths_[i] == 0) {
                 printf("ERROR: Integer delay line lengths clash!!!!! Use a different tuning or try oversampling.\n");
                 return;
@@ -150,10 +156,17 @@ public:
             //     printf("WANNA BE FREEEEEEE\n");
             //     freeTube(tubes_[i]);
             // }
-            tubes_[i] = initTube(tubeLengths_[i]);
-            prevlL += tubeLengths_[i];
+
+            if (i == 0) {
+                tubes_[i] = initTube(tubeLengths_[i]);
+                prevlL += tubeLengths_[i] + correction;
+            } else {
+                tubes_[i] = initTube(tubeLengths_[i]);
+                prevlL += tubeLengths_[i];
+            }
             printf("th %d: lL = %d\n", i, tubeLengths_[i]);
         }
+
         // Dummy
         tubeLengths_[numTubes_-1] = (int) ((1.0/tuning[numTubes_-1]) * LS) - prevlL;
         if (tubeLengths_[numTubes_-1] == 0) {
@@ -412,6 +425,7 @@ SAMPLE tick(SAMPLE in)
                 printf("breath going out of bounds of -1 to 1: %f\n", breath);
             }
 
+            debug("%d\n", tubeLengths_[0]);
             // Helps reduce high-pitched noise.
             // breath = inputBiquad(biquad_, breath);
             breath = interpolateLinear(shaper(breath, m_drive_), breath, shaperMix_);
