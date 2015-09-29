@@ -4,7 +4,7 @@
 #include "Birl.h"
 
 typedef enum {EQUAL_TEMPERED, JUST_INTONATION, MEANTONE, HIGHLAND_BAGPIPE, CUSTOM} tuningSystem;
-enum {NUM_NOTES = 11};
+enum {NUM_NOTES = 1};
 double justIntonation[] = {10.0/4.0, 18.0/8.0, 2.0/1.0, 15.0/8.0, 5.0/3.0, 3.0/2.0, 4.0/3.0, 5.0/4.0, 9.0/8.0, 1.0, 15.0/16.0};
 /* double justIntonation[] = {10.0/4.0, 18.0/8.0, 2.0/1.0, 15.0/8.0, 5.0/3.0, 3.0/2.0, 4.0/3.0, 5.0/4.0, 9.0/8.0, 1.0, 15.0/16.0, 5.0/6.0, 3.0/4.0, 4.0/6.0, 5.0/8.0}; */
 double equalTempered[] = {2.519840, 2.244920, 2.000000, 1.887750, 1.681790, 1.498310, 1.334830, 1.259920, 1.122460, 1.000000, 0.9439};
@@ -12,7 +12,6 @@ double meanTone[] = {2.5, 2.236, 2.0000, 1.8692, 1.6719, 1.4953, 1.3375, 1.2500,
 double highlandBagpipe[] = {2.25, 2., 1.8, 1.66666, 1.5, 1.35, 1.25, 1.125, 1, 0.9, 0.83333};
 double customTuning[] = {2.519840, 2.244920, 2.000000, 1.887750, 1.681790, 1.498310, 1.334830, 1.259920, 1.122460, 1.000000, 0.9439};
 
-int FUNDAMENTAL_INDEX = NUM_NOTES - 2;
 const double MIN_D1 = 1.0; // = 0.002 * 2 * 200
 const double DH_FIRST_GUESS = 1.0;
 
@@ -27,8 +26,9 @@ static double convertTocm(double samps) {
 }
 
 static double calcg(int thNum) {
-    if (thNum < 0 || thNum > NUM_NOTES-2) {
-        printf("thNum out of bounds: %d\n", thNum);
+    // CHANGED THIS FROM NUM_NOTES - 1!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    if (thNum < 0 || thNum > NUM_NOTES) {
+        printf("calcg: thNum out of bounds: %d\n", thNum);
         return 0.0;
     }
     return (tuning[thNum] / tuning[thNum+1]) - 1.0;
@@ -44,7 +44,7 @@ static int calcLC(double LS) {
     double LC = (int) LS;
     double d1 = calcd1(LC, LS);
     while (d1 < MIN_D1) {
-        printf("d1 = %f for this value of LC so we're shortening LC!!!!!!\n", d1);
+        printf("calcLC: d1 = %f for this value of LC so we're shortening LC!!!!!!\n", d1);
         LC -= 1.0;
         d1 = calcd1(LC, LS);
     }
@@ -83,8 +83,7 @@ static double calcdH(int thNum, double d1, double LS, int lL) {
 }
 
 static void populateCustomTuning(double freqs[NUM_NOTES]) {
-    /* double Fc = freqs[FUNDAMENTAL_INDEX]; */
-    double Fc = freqs[NUM_NOTES - 1];
+    double Fc = freqs[NUM_NOTES];
     /* printf("fundamental: %f\n", Fc); */
     for (int i = 0; i < NUM_NOTES; i++) {
         customTuning[i] = freqs[i] / Fc;

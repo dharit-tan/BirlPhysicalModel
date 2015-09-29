@@ -83,6 +83,10 @@ static void setB0PoleZero(PoleZero *pz, double b0) {
     pz->b0 = b0;
 }
 
+static void setB1PoleZero(PoleZero *pz, double b1) {
+    pz->b1 = b1;
+}
+
 static double inputPoleZero(PoleZero *pz, double input) {
     pz->x1 = input;
     double output = pz->b0 * pz->x1 + pz->b1 * pz->x2 - pz->a1 * pz->z1;

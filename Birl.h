@@ -17,7 +17,7 @@ const double RTH_TWEAK_FACTOR = 0.005;
 double originalRth_[MAX_TONEHOLES];
 double rth_[MAX_TONEHOLES];
 int tubeLengths_[MAX_TUBES];
-const int OVERSAMPLE = 2;
+const int OVERSAMPLE = 1;
 
 const double C_cm = 34500.0;
 const double C_m = 345.0;

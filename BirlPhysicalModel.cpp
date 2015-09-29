@@ -13,8 +13,8 @@
 
 // #include "ReedTable.h"
 #include "OneZero.h"
-#include "PoleZero.h"
-#include "Noise.h"
+// #include "PoleZero.h"
+// #include "Noise.h"
 
 #include "Birl.h"
 #include "Birl_Filters.h"
@@ -131,75 +131,79 @@ public:
         calcTHCoeffs();
     }
 
-    void tune(double Fc) {
-        Fc = (tuning[NUM_NOTES-2]/tuning[NUM_NOTES-1]) * Fc;
-        double LS = calcLS(Fc);
-        int LC = calcLC(LS);
-        double d1 = calcd1(LC, LS);
-        printf("LC: %d\n", LC);
+    // void tune(double Fc) {
+    //     // for dummy?
+    //     // Fc = (tuning[NUM_NOTES-1]/tuning[NUM_NOTES]) * Fc;
+    //     // printf("Fc: %f\n", Fc);
+    //     double LS = calcLS(Fc);
+    //     int LC = calcLC(LS);
+    //     double d1 = calcd1(LC, LS);
+    //     printf("LC: %d\n", LC);
+    //     printf("d1: %f\n", d1);
 
-        int prevlL = 0;
-        int correction = 0;
-        // Must handle dummy separately.
-        for (int i = 0; i < numTubes_ - 1; i++) {
-            tubeLengths_[i] = calclL(d1, i, LS) - prevlL;
+    //     int prevlL = 0;
+    //     int correction = 0;
+    //     // Must handle dummy separately.
+    //     for (int i = 0; i < numTubes_ - 1; i++) {
+    //         printf("tubelength %d: %d\n", i, calclL(d1, i, LS) - prevlL);
+    //         tubeLengths_[i] = calclL(d1, i, LS) - prevlL;
 
-            if (i == 0) {
-                tubeLengths_[i] -= correction;
-            }
+    //         if (i == 0) {
+    //             tubeLengths_[i] -= correction;
+    //         }
 
-            if (tubeLengths_[i] == 0) {
-                printf("ERROR: Integer delay line lengths clash!!!!! Use a different tuning or try oversampling.\n");
-                return;
-            }
-            // if (tubes_[i] != NULL) {
-            //     printf("WANNA BE FREEEEEEE\n");
-            //     freeTube(tubes_[i]);
-            // }
+    //         if (tubeLengths_[i] == 0) {
+    //             printf("ERROR: Integer delay line lengths clash!!!!! Use a different tuning or try oversampling.\n");
+    //             return;
+    //         }
+    //         // if (tubes_[i] != NULL) {
+    //         //     printf("WANNA BE FREEEEEEE\n");
+    //         //     freeTube(tubes_[i]);
+    //         // }
 
-            if (i == 0) {
-                tubes_[i] = initTube(tubeLengths_[i]);
-                prevlL += tubeLengths_[i] + correction;
-            } else {
-                tubes_[i] = initTube(tubeLengths_[i]);
-                prevlL += tubeLengths_[i];
-            }
-            printf("th %d: lL = %d\n", i, tubeLengths_[i]);
-        }
+    //         if (i == 0) {
+    //             tubes_[i] = initTube(tubeLengths_[i]);
+    //             prevlL += tubeLengths_[i] + correction;
+    //         } else {
+    //             tubes_[i] = initTube(tubeLengths_[i]);
+    //             prevlL += tubeLengths_[i];
+    //         }
+    //         printf("th %d: lL = %d\n", i, tubeLengths_[i]);
+    //     }
 
-        // Dummy
-        tubeLengths_[numTubes_-1] = (int) ((1.0/tuning[numTubes_-1]) * LS) - prevlL;
-        if (tubeLengths_[numTubes_-1] == 0) {
-            printf("ERROR: Integer delay line lengths clash!!!!! Use a different tuning or try oversampling.\n");
-            return;
-        }
-        tubes_[numTubes_-1] = initTube(tubeLengths_[numTubes_-1]);
-        printf("th %d: lL = %d\n", numTubes_-1, tubeLengths_[numTubes_-1]);
+    //     // Dummy
+    //     // tubeLengths_[numTubes_-1] = (int) ((1.0/tuning[numTubes_-1]) * LS) - prevlL;
+    //     // if (tubeLengths_[numTubes_-1] == 0) {
+    //     //     printf("ERROR: Integer delay line lengths clash!!!!! Use a different tuning or try oversampling.\n");
+    //     //     return;
+    //     // }
+    //     // tubes_[numTubes_-1] = initTube(tubeLengths_[numTubes_-1]);
+    //     // printf("th %d: lL = %d\n", numTubes_-1, tubeLengths_[numTubes_-1]);
 
-        originalrb_ = convertTocm(d1)/200.0;    // main bore radius
-        rb_ = originalrb_;
-        int lL = tubeLengths_[0];
-        for (int i = 0; i < numToneHoles_; i++) {
-            originalRth_[i] = convertTocm(calcdH(i, d1, LS, lL))/200.0;
-            rth_[i] = originalRth_[i];
-            lL += tubeLengths_[i+1];
-        }
+    //     originalrb_ = convertTocm(d1)/200.0;    // main bore radius
+    //     rb_ = originalrb_;
+    //     int lL = tubeLengths_[0];
+    //     for (int i = 0; i < numToneHoles_; i++) {
+    //         originalRth_[i] = convertTocm(calcdH(i, d1, LS, lL))/200.0;
+    //         rth_[i] = originalRth_[i];
+    //         lL += tubeLengths_[i+1];
+    //     }
 
-        printf("rb: %f\n", rb_);
-        // printf("tubeLengths:\n");
-        // for (int i = 0; i < numTubes_; i++) {
-        //     printf("tube %d: %d\n", i, tubeLengths_[i]);
-        // }
+    //     printf("rb: %f\n", rb_);
+    //     // printf("tubeLengths:\n");
+    //     // for (int i = 0; i < numTubes_; i++) {
+    //     //     printf("tube %d: %d\n", i, tubeLengths_[i]);
+    //     // }
 
-        printf("toneHole radii:\n");
-        lL = 0.0;
-        for (int i = 0; i < numToneHoles_; i++) {
-            lL += tubeLengths_[i];
-            double LSh = (1.0/tuning[i]) * LS;
-            printf("th %d rth: %f m, output freq when open: %f\n", i, rth_[i], checkTuning(d1, convertToSamples(rth_[i]*200.0), LSh, lL, calcg(i)));
-        }
-        calcTHCoeffs();
-    }
+    //     printf("toneHole radii:\n");
+    //     lL = 0.0;
+    //     for (int i = 0; i < numToneHoles_; i++) {
+    //         lL += tubeLengths_[i];
+    //         double LSh = (1.0/tuning[i]) * LS;
+    //         printf("th %d rth: %f m, output freq when open: %f\n", i, rth_[i], checkTuning(d1, convertToSamples(rth_[i]*200.0), LSh, lL, calcg(i)));
+    //     }
+    //     calcTHCoeffs();
+    // }
 
 /* ------ Parameter accessors ----------------------------------------- */
     
@@ -226,8 +230,8 @@ public:
             new_coeff = thCoeff;
         else
             new_coeff = ( newValue * (thCoeff - 0.9995) ) + 0.9995;
-        toneHoles_[index]->setA1( -new_coeff );
-        toneHoles_[index]->setB0( new_coeff );
+        setA1PoleZero( toneHoles_[index], -new_coeff );
+        setB0PoleZero( toneHoles_[index], new_coeff );
     }
 
     void setToneHoleRadius(double newRadius) {
@@ -337,6 +341,7 @@ public:
         tune(freqs[NUM_NOTES - 1]);
     }
     
+    // old version (you can tell by the STK parts)
     void calcTHCoeffs() {
         // Calculate initial tone hole three-port scattering coefficients
         for (int i = 0; i < MAX_TONEHOLES; i++) {
@@ -346,22 +351,229 @@ public:
             thCoeff_[i] = (rth_[i]*2*(SRATE*OVERSAMPLE) - C_m) / (rth_[i]*2*(SRATE*OVERSAMPLE) + C_m);
 
             // Initialize tone holes.
-            toneHoles_[i] = new stk::PoleZero();
-            toneHoles_[i]->setA1(-thCoeff_[i]);
-            toneHoles_[i]->setB0(thCoeff_[i]);
-            toneHoles_[i]->setB1(-1.0);
+            toneHoles_[i] = initPoleZero();
+            setA1PoleZero(toneHoles_[i], -thCoeff_[i]);
+            setB0PoleZero(toneHoles_[i], thCoeff_[i]);
+            setB1PoleZero(toneHoles_[i], -1.0);
         }
     }
+
+    // void calcTHCoeffs() {
+    // // Calculate initial tone hole three-port scattering coefficients
+    // for (int i = 0; i < MAX_TONEHOLES; i++) {
+    //     scatter_[i] = -pow(rth_[i],2) / ( pow(rth_[i],2) + 2*pow(rb_,2) );
+
+    //     // Calculate toneHole coefficients and set for initially open.
+    //     thCoeff_[i] = (rth_[i]*2*(SRATE*OVERSAMPLE) - C_m) / (rth_[i]*2*(SRATE*OVERSAMPLE) + C_m);
+
+    //     // Initialize tone holes.
+    //     toneHoles_[i] = initPoleZero();
+    //     setA1PoleZero(toneHoles_[i], -thCoeff_[i]);
+    //     setB0PoleZero(toneHoles_[i], thCoeff_[i]);
+    //     setB1PoleZero(toneHoles_[i], -1.0);
+    // }
+// }
+
+void tune(double Fc) {
+    // Fc = (tuning[NUM_NOTES-1]/tuning[NUM_NOTES]) * Fc;
+    // printf("Fc: %f\n", Fc);
+    double LS = calcLS(Fc);
+    int LC = calcLC(LS);
+    double d1 = calcd1(LC, LS);
+    printf("LC: %d\n", LC);
+    printf("d1: %f\n", d1);
+
+    int prevlL = 0;
+    int correction = 0;
+
+    for (int i = 0; i < numTubes_; i++) {
+        printf("tubelength %d: %d\n", i, calclL(d1, i, LS) - prevlL);
+        tubeLengths_[i] = calclL(d1, i, LS) - prevlL;
+
+        // if (i == 0) {
+        //     tubelengths_[i] -= correction;
+        // }
+
+        if (tubeLengths_[i] == 0) {
+            printf("ERROR: Integer delay line lengths clash!!!!! Use a different tuning or try oversampling.\n");
+            return;
+        }
+        // if (tubes_[i] != NULL) {
+        //     printf("WANNA BE FREEEEEEE\n");
+        //     freeTube(tubes_[i]);
+        // }
+
+        if (i == 0) {
+            tubes_[i] = initTube(tubeLengths_[i]);
+            // prevlL += tubeLengths_[i] + correction;
+            prevlL += tubeLengths_[i];
+        } else {
+            tubes_[i] = initTube(tubeLengths_[i]);
+            prevlL += tubeLengths_[i];
+        }
+        printf("th %d: lL = %d\n", i, tubeLengths_[i]);
+    }
+
+    // Dummy
+    // tubeLengths_[numTubes_-1] = (int) ((1.0/tuning[numTubes_-1]) * LS) - prevlL;
+    // if (tubeLengths_[numTubes_-1] == 0) {
+    //     printf("ERROR: Integer delay line lengths clash!!!!! Use a different tuning or try oversampling.\n");
+    //     return;
+    // }
+    // tubes_[numTubes_-1] = initTube(tubeLengths_[numTubes_-1]);
+    // printf("th %d: lL = %d\n", numTubes_-1, tubeLengths_[numTubes_-1]);
+
+    originalrb_ = convertTocm(d1)/200.0;    // main bore radius
+    rb_ = originalrb_;
+    int lL = tubeLengths_[0];
+    for (int i = 0; i < numToneHoles_; i++) {
+        originalRth_[i] = convertTocm(calcdH(i, d1, LS, lL))/200.0;
+        rth_[i] = originalRth_[i];
+        lL += tubeLengths_[i+1];
+    }
+
+    printf("rb: %f\n", rb_);
+    // printf("tubeLengths:\n");
+    // for (int i = 0; i < numTubes_; i++) {
+    //     printf("tube %d: %d\n", i, tubeLengths_[i]);
+    // }
+
+    printf("toneHole radii:\n");
+    lL = 0.0;
+    for (int i = 0; i < numToneHoles_; i++) {
+        lL += tubeLengths_[i];
+        double LSh = (1.0/tuning[i]) * LS;
+        printf("th %d rth: %f m, output freq when open: %f\n", i, rth_[i], checkTuning(d1, convertToSamples(rth_[i]*200.0), LSh, lL, calcg(i)));
+    }
+    calcTHCoeffs();
+}
+
+    double interpolateLinear(double a, double b, double alpha) {
+        return (alpha * a) + ((1.0-alpha) * b);
+    }
+
+SAMPLE tick(SAMPLE in)
+{
+    double breathInterp[OVERSAMPLE];
+    for (int i = 0; i < OVERSAMPLE; i++) {
+        breathInterp[i] = interpolateLinear(breathPressure_, prevBreathPressure_, (double) (i+1) / (double) OVERSAMPLE);
+    }
+    prevBreathPressure_ = breathPressure_;
+    
+    double pap;
+    double pbm;
+    double pthm;
+    double outsamp = 0.0;
+    double scatter;
+    double bellReflected;
+    
+    for (int t = 0; t < OVERSAMPLE; t++) {
+        double breath = breathInterp[t];
+        double noise = ((double)rand()/(double)RAND_MAX);
+        noise = noiseGain_ * (inputSVFBand(noiseBP_, noise));
+        // double noise = noiseGain_ * rand();
+        breath += breath * noise;
+
+        // Calculate the differential pressure = reflected - mouthpiece pressures
+        double pressureDiff = accessDelayLine(tubes_[0]->lower) - breath;
+        double reedLookup = pressureDiff * reedTable( pressureDiff );
+        breath = tanhClip(breath + reedLookup);
+        if (breath >= 1 || breath <= -1) {
+            printf("breath going out of bounds of -1 to 1: %f\n", breath);
+        }
+
+        // debug("%d\n", tubeLengths_[0]);
+        // Helps reduce high-pitched noise.
+        // breath = inputBiquad(biquad_, breath);
+        breath = interpolateLinear(shaper(breath, m_drive_), breath, shaperMix_);
+        // breath = inputSVFPeak(pf_, breath);
+        // breath = inputSVFLP(lp_, breath);
+        // breath = inputDCFilter(dcBlocker_, breath);
+
+        for (int i = 0; i < numToneHoles_; i++) {
+            // Index in tubes_[] of tube positioned before toneHoles[i].
+            int a = i + FRONT_TUBES - 1;
+            // Index in tubes_[] of tube positioned after toneHoles[i].
+            int b = i + FRONT_TUBES;
+
+            // Three-port junction scattering.
+            pap = accessDelayLine(tubes_[a]->upper);
+            pbm = accessDelayLine(tubes_[b]->lower);
+            pthm = z1PoleZero(toneHoles_[i]);
+
+            scatter = scatter_[i] * (pap + pbm - (2 * pthm));
+            pbp_[i] = pap + scatter;
+            pam_[i] = pbm + scatter;
+            pthp_[i] = pap + scatter + pbm - pthm;
+            
+            // Sample output at tubes_[SAMPLE_INDEX].
+            if (a == SAMPLE_INDEX) {
+                outsamp += pap + pam_[i];
+            }
+
+            // Bell reflection at last tube.
+            if (i == numToneHoles_ - 1) {
+                double bell = accessDelayLine(tubes_[b]->upper);
+                // double bell2 = shaper(bell1, m_drive_);
+                // double bell4 = inputSVFPeak(pf2_, bell1);
+                // bell = inputSVFLP(lp2_, bell);
+                // // Reflection = Inversion + gain reduction + lowpass filtering.
+                // bell = inputSVFLP(lp2_, bell);
+                // bell = inputDCFilter(dcBlocker2_, bell);
+                bellReflected = bell * -0.995;
+                // bellReflected = filter_.tick(bell * -0.995);
+            }
+        }
+
+        // Perform all inputs at the end so that we're not altering
+        // state prior to calculations.
+        for (int i = 0; i < numToneHoles_; i++) {
+            // Index in tubes_[] of tube positioned before toneHoles[i].
+            int a = i + FRONT_TUBES - 1;
+            // Index in tubes_[] of tube positioned after toneHoles[i].
+            int b = i + FRONT_TUBES;
+
+            inputPoleZero(toneHoles_[i], pthp_[i]);
+            // toneHoles_[i]->tick(pthp_[i]);
+            inputDelayLine(tubes_[a]->lower, pam_[i]);
+            inputDelayLine(tubes_[b]->upper, pbp_[i]);
+        }
+        inputDelayLine(tubes_[0]->upper, breath);
+        inputDelayLine(tubes_[numTubes_-1]->lower, bellReflected);
+    }
+    
+    count++;
+    
+    // debug("%.5f -0-> ", breath);
+    // for (int i = 0; i < numToneHoles_; i++) {
+    //     debug("\t%.5f\t-%d->", pbp_[i], i+1);
+    // }
+    // debug("\n");
+    // for (int i = 0; i < numToneHoles_; i++) {
+    //     debug("%.5f\t<-%d-\t", pam_[i], i);
+    // }
+    // debug("%.5f\n", bellReflected);
+    // debug("range: %f - %f\n", min, max);
+    // debug("\n");
+    
+    // Clipping, account for oversampling, and gain.
+    outsamp /= (double) OVERSAMPLE;
+    outsamp = tanhClip(outsamp);
+    outsamp *= outputGain_;
+    return outsamp;
+}
     
     // constructor
     BirlPhysicalModel(t_CKFLOAT lowestFrequency)
     {
-        numToneHoles_ = MAX_TONEHOLES;
-        numTubes_ = MAX_TUBES;
+        numToneHoles_ = 1;
+        numTubes_ = 2;
         tubeIndex_ = 0;
 
         setTuning(EQUAL_TEMPERED);
         tune(440.0);
+
+        printf("\n\n");
         
         // reedTable_.setOffset( 0.7 );
         // reedTable_.setSlope( -0.3 );
@@ -380,16 +592,15 @@ public:
         noiseGain_ = 0.2;
 
         breathPressure_ = 0.0;
+        prevBreathPressure_ = 0.0;
         count = 0;
         min = 0.0;
         max = 0.0;
         m_drive_ = 0.0;
         shaperMix_ = 0.0;
+        srand((unsigned)time(NULL));
     }
     
-    double interpolateLinear(double a, double b, double alpha) {
-        return (alpha * a) + ((1.0-alpha) * b);
-    }
     
     // // for Chugins extending UGen
     // SAMPLE tick(SAMPLE in) {
@@ -397,113 +608,113 @@ public:
     //     // return inputSVFLP(lp_, noise_.tick());
     // }
     
-SAMPLE tick(SAMPLE in)
-    {
-        double breathInterp[OVERSAMPLE];
-        for (int i = 0; i < OVERSAMPLE; i++) {
-            breathInterp[i] = interpolateLinear(breathPressure_, prevBreathPressure_, (double) (i+1) / (double) OVERSAMPLE);
-        }
-        prevBreathPressure_ = breathPressure_;
+// SAMPLE tick(SAMPLE in)
+//     {
+//         double breathInterp[OVERSAMPLE];
+//         for (int i = 0; i < OVERSAMPLE; i++) {
+//             breathInterp[i] = interpolateLinear(breathPressure_, prevBreathPressure_, (double) (i+1) / (double) OVERSAMPLE);
+//         }
+//         prevBreathPressure_ = breathPressure_;
         
-        double pap;
-        double pbm;
-        double pthm;
-        double outsamp = 0.0;
-        double scatter;
-        double bellReflected;
+//         double pap;
+//         double pbm;
+//         double pthm;
+//         double outsamp = 0.0;
+//         double scatter;
+//         double bellReflected;
         
-        for (int t = 0; t < OVERSAMPLE; t++) {
-            double breath = breathInterp[t];
-            double noise = noiseGain_ * (inputSVFBand(noiseBP_, noise_.tick()));
-            breath += breath * noise;
+//         for (int t = 0; t < OVERSAMPLE; t++) {
+//             double breath = breathInterp[t];
+//             double noise = noiseGain_ * (inputSVFBand(noiseBP_, noise_.tick()));
+//             breath += breath * noise;
 
-            // Calculate the differential pressure = reflected - mouthpiece pressures
-            double pressureDiff = accessDelayLine(tubes_[0]->lower) - breath;
-            double reedLookup = pressureDiff * reedTable( pressureDiff );
-            breath = tanhClip(breath + reedLookup);
-            if (breath >= 1 || breath <= -1) {
-                printf("breath going out of bounds of -1 to 1: %f\n", breath);
-            }
+//             // Calculate the differential pressure = reflected - mouthpiece pressures
+//             double pressureDiff = accessDelayLine(tubes_[0]->lower) - breath;
+//             double reedLookup = pressureDiff * reedTable( pressureDiff );
+//             breath = tanhClip(breath + reedLookup);
+//             if (breath >= 1 || breath <= -1) {
+//                 printf("breath going out of bounds of -1 to 1: %f\n", breath);
+//             }
 
-            debug("%d\n", tubeLengths_[0]);
-            // Helps reduce high-pitched noise.
-            // breath = inputBiquad(biquad_, breath);
-            breath = interpolateLinear(shaper(breath, m_drive_), breath, shaperMix_);
-            // breath = inputSVFPeak(pf_, breath);
-            // breath = inputSVFLP(lp_, breath);
-            // breath = inputDCFilter(dcBlocker_, breath);
+//             // debug("%d\n", tubeLengths_[0]);
+//             // Helps reduce high-pitched noise.
+//             // breath = inputBiquad(biquad_, breath);
+//             breath = interpolateLinear(shaper(breath, m_drive_), breath, shaperMix_);
+//             // breath = inputSVFPeak(pf_, breath);
+//             // breath = inputSVFLP(lp_, breath);
+//             // breath = inputDCFilter(dcBlocker_, breath);
 
-            for (int i = 0; i < numToneHoles_; i++) {
-                // Index in tubes_[] of tube positioned before toneHoles[i].
-                int a = i + FRONT_TUBES - 1;
-                // Index in tubes_[] of tube positioned after toneHoles[i].
-                int b = i + FRONT_TUBES;
+//             for (int i = 0; i < numToneHoles_; i++) {
+//                 // Index in tubes_[] of tube positioned before toneHoles[i].
+//                 int a = i + FRONT_TUBES - 1;
+//                 // Index in tubes_[] of tube positioned after toneHoles[i].
+//                 int b = i + FRONT_TUBES;
 
-                // Three-port junction scattering.
-                pap = accessDelayLine(tubes_[a]->upper);
-                pbm = accessDelayLine(tubes_[b]->lower);
-                pthm = toneHoles_[i]->lastOut();
+//                 // Three-port junction scattering.
+//                 pap = accessDelayLine(tubes_[a]->upper);
+//                 pbm = accessDelayLine(tubes_[b]->lower);
+//                 pthm = toneHoles_[i]->lastOut();
 
-                scatter = scatter_[i] * (pap + pbm - (2 * pthm));
-                pbp_[i] = pap + scatter;
-                pam_[i] = pbm + scatter;
-                pthp_[i] = pap + scatter + pbm - pthm;
+//                 scatter = scatter_[i] * (pap + pbm - (2 * pthm));
+//                 pbp_[i] = pap + scatter;
+//                 pam_[i] = pbm + scatter;
+//                 pthp_[i] = pap + scatter + pbm - pthm;
                 
-                // Sample output at tubes_[SAMPLE_INDEX].
-                if (a == SAMPLE_INDEX) {
-                    outsamp += pap + pam_[i];
-                }
+//                 // Sample output at tubes_[SAMPLE_INDEX].
+//                 if (a == SAMPLE_INDEX) {
+//                     outsamp += pap + pam_[i];
+//                 }
 
-                // Bell reflection at last tube.
-                if (i == numToneHoles_ - 1) {
-                    double bell = accessDelayLine(tubes_[b]->upper);
-                    // double bell2 = shaper(bell1, m_drive_);
-                    // double bell4 = inputSVFPeak(pf2_, bell1);
-                    // bell = inputSVFLP(lp2_, bell);
-                    // // Reflection = Inversion + gain reduction + lowpass filtering.
-                    // bell = inputSVFLP(lp2_, bell);
-                    // bell = inputDCFilter(dcBlocker2_, bell);
-                    bellReflected = bell * -0.995;
-                    // bellReflected = filter_.tick(bell * -0.995);
-                }
-            }
+//                 // Bell reflection at last tube.
+//                 if (i == numToneHoles_ - 1) {
+//                     double bell = accessDelayLine(tubes_[b]->upper);
+//                     // double bell2 = shaper(bell1, m_drive_);
+//                     // double bell4 = inputSVFPeak(pf2_, bell1);
+//                     // bell = inputSVFLP(lp2_, bell);
+//                     // // Reflection = Inversion + gain reduction + lowpass filtering.
+//                     // bell = inputSVFLP(lp2_, bell);
+//                     // bell = inputDCFilter(dcBlocker2_, bell);
+//                     bellReflected = bell * -0.995;
+//                     // bellReflected = filter_.tick(bell * -0.995);
+//                 }
+//             }
 
-            // Perform all inputs at the end so that we're not altering
-            // state prior to calculations.
-            for (int i = 0; i < numToneHoles_; i++) {
-                // Index in tubes_[] of tube positioned before toneHoles[i].
-                int a = i + FRONT_TUBES - 1;
-                // Index in tubes_[] of tube positioned after toneHoles[i].
-                int b = i + FRONT_TUBES;
+//             // Perform all inputs at the end so that we're not altering
+//             // state prior to calculations.
+//             for (int i = 0; i < numToneHoles_; i++) {
+//                 // Index in tubes_[] of tube positioned before toneHoles[i].
+//                 int a = i + FRONT_TUBES - 1;
+//                 // Index in tubes_[] of tube positioned after toneHoles[i].
+//                 int b = i + FRONT_TUBES;
 
-                toneHoles_[i]->tick(pthp_[i]);
-                inputDelayLine(tubes_[a]->lower, pam_[i]);
-                inputDelayLine(tubes_[b]->upper, pbp_[i]);
-            }
-            inputDelayLine(tubes_[0]->upper, breath);
-            inputDelayLine(tubes_[numTubes_-1]->lower, bellReflected);
-        }
+//                 toneHoles_[i]->tick(pthp_[i]);
+//                 inputDelayLine(tubes_[a]->lower, pam_[i]);
+//                 inputDelayLine(tubes_[b]->upper, pbp_[i]);
+//             }
+//             inputDelayLine(tubes_[0]->upper, breath);
+//             inputDelayLine(tubes_[numTubes_-1]->lower, bellReflected);
+//         }
         
-        count++;
+//         count++;
         
-        // debug("%.5f -0-> ", breath);
-        // for (int i = 0; i < numToneHoles_; i++) {
-        //     debug("\t%.5f\t-%d->", pbp_[i], i+1);
-        // }
-        // debug("\n");
-        // for (int i = 0; i < numToneHoles_; i++) {
-        //     debug("%.5f\t<-%d-\t", pam_[i], i);
-        // }
-        // debug("%.5f\n", bellReflected);
-        // debug("range: %f - %f\n", min, max);
-        // debug("\n");
+//         // debug("%.5f -0-> ", breath);
+//         // for (int i = 0; i < numToneHoles_; i++) {
+//         //     debug("\t%.5f\t-%d->", pbp_[i], i+1);
+//         // }
+//         // debug("\n");
+//         // for (int i = 0; i < numToneHoles_; i++) {
+//         //     debug("%.5f\t<-%d-\t", pam_[i], i);
+//         // }
+//         // debug("%.5f\n", bellReflected);
+//         // debug("range: %f - %f\n", min, max);
+//         // debug("\n");
         
-        // Clipping, account for oversampling, and gain.
-        outsamp /= (double) OVERSAMPLE;
-        outsamp = tanhClip(outsamp);
-        outsamp *= outputGain_;
-        return outsamp;
-    }
+//         // Clipping, account for oversampling, and gain.
+//         outsamp /= (double) OVERSAMPLE;
+//         outsamp = tanhClip(outsamp);
+//         outsamp *= outputGain_;
+//         return outsamp;
+//     }
     
 protected:
     int numTubes_;
@@ -518,10 +729,10 @@ protected:
     double thCoeff_[MAX_TONEHOLES];
     
     Tube *tubes_[MAX_TUBES];
-    stk::PoleZero *toneHoles_[MAX_TONEHOLES];
+    PoleZero *toneHoles_[MAX_TONEHOLES];
     // stk::ReedTable reedTable_;
     stk::OneZero   filter_;
-    stk::Noise     noise_;
+    // stk::Noise     noise_;
     DCFilter *dcBlocker_;
     DCFilter *dcBlocker2_;
     Biquad *biquad_;
@@ -752,6 +963,7 @@ CK_DLL_MFUN(birlphysicalmodel_setFundamental)
     BirlPhysicalModel * bcdata = (BirlPhysicalModel *) OBJ_MEMBER_INT(SELF, birlphysicalmodel_data_offset);
     // set the return value
     bcdata->tune(GET_NEXT_FLOAT(ARGS));
+    printf("\n\n");
 }
 
 CK_DLL_MFUN(birlphysicalmodel_tweakBoreRadius)

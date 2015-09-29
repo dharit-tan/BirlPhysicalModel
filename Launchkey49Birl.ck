@@ -43,14 +43,14 @@ if( devices == 0 )
 // 3: highland bagpipe
 // 4: custom (must call setTuningCustom() with set of 11 freqs first)
 
-BlowHoleBiCVariableTH t => Gain g1 => dac;
+BirlPhysicalModel t => Gain g1 => dac;
 
 // harmonic minor scale
-(622.25, 587.33, 523.25, 493.88, 415.30, 392.00, 349.23, 311.13, 293.66, 261.63, 246.94) => t.setCustomTuning;
+// (622.25, 587.33, 523.25, 493.88, 415.30, 392.00, 349.23, 311.13, 293.66, 261.63, 246.94) => t.setCustomTuning;
 
-0 => t.tuning;
-440 => float Fc;
-Fc => t.setFundamental;
+// 0 => t.tuning;
+// 440 => float Fc;
+// Fc => t.setFundamental;
 
 // infinite time loop
 while( true ) 1::second => now;
@@ -74,7 +74,7 @@ fun void go( MidiIn min, int id )
             if (msg.data1 == 176) {
                 // breathPressure
                 if (msg.data2 == 1) {
-                    msg.data3/64.0 => t.breathPressure;
+                    msg.data3/128.0 => t.breathPressure;
                 }
                 /*
                 // PF Q
@@ -173,7 +173,7 @@ fun void go( MidiIn min, int id )
                 }*/
                 
             }
-            else if (msg.data1 == 144) {
+            else if (msg.data1 == 128 || msg.data1 == 144) {
                 if (msg.data2 == 72) {
                     if (msg.data3 == 0.0) {
                         (0, 1.0) => t.toneHole;
@@ -248,7 +248,7 @@ fun void go( MidiIn min, int id )
                 }
             }
             // print out midi message with id
-//            <<< "device", id, ":", msg.data1, msg.data2, msg.data3 >>>;
+            // <<< "device", id, ":", msg.data1, msg.data2, msg.data3 >>>;
         }
     }
 }
