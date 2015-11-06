@@ -56,10 +56,11 @@ static double calcLS(double Fc) {
     return (SRATE*OVERSAMPLE)/(4.0 * Fc);
 }
 
-static int calclL(double d1, int thNum, double LS) {
+static int calclL(double d1, int thNum, double LS, double correction) {
+    double correctedLS = LS - correction;
     double dH = 1.0 * OVERSAMPLE;
     double g = calcg(thNum);
-    double LSh = (1.0/tuning[thNum]) * LS;
+    double LSh = (1.0/tuning[thNum]) * correctedLS;
     double LBh = dH * ((d1*d1)/(dH*dH)) - 0.45*d1;
     double z = 0.5 * g * sqrt(1 + 4*(LBh/(g*LSh))) - 0.5*g;
     return (int) (LSh - (z*LSh));
