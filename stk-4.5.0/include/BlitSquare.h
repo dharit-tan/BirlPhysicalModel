@@ -126,7 +126,7 @@ inline StkFloat BlitSquare :: tick( void )
   StkFloat denominator = sin( phase_ );
   if ( fabs( denominator )  < std::numeric_limits<StkFloat>::epsilon() ) {
     // Inexact comparison safely distinguishes betwen *close to zero*, and *close to PI*.
-    if ( phase_ < 0.1f || phase_ > TWO_PI - 0.1f )
+    if ( phase_ < 0.1f || phase_ > TWOPI - 0.1f )
       lastBlitOutput_ = a_;
     else
       lastBlitOutput_ = -a_;
@@ -143,7 +143,7 @@ inline StkFloat BlitSquare :: tick( void )
   dcbState_ = lastBlitOutput_;
 
   phase_ += rate_;
-  if ( phase_ >= TWO_PI ) phase_ -= TWO_PI;
+  if ( phase_ >= TWOPI ) phase_ -= TWOPI;
 
 	return lastFrame_[0];
 }

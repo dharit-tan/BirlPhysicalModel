@@ -7,7 +7,7 @@ CHUGIN_NAME=BirlPhysicalModel
 C_MODULES=
 CXX_MODULES=BirlPhysicalModel.cpp stk-4.5.0/src/Noise.cpp \
 stk-4.5.0/src/OneZero.cpp stk-4.5.0/src/PoleZero.cpp \
-stk-4.5.0/src/Stk.cpp stk-4.5.0/src/BiQuad.cpp
+stk-4.5.0/src/Stk.cpp stk-4.5.0/src/BiQuad.cpp \
 
 # where the chuck headers are
 CK_SRC_PATH?=../chuck/include/

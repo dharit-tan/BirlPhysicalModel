@@ -21,6 +21,9 @@
 #include "Birl_Tuning.h"
 #include "Birl_Tube.h"
 
+#define SAMPLEFILTER_TAP_NUM 7
+
+
 // declaration of chugin constructor
 CK_DLL_CTOR(birlphysicalmodel_ctor);
 // declaration of chugin desctructor
@@ -56,6 +59,77 @@ t_CKINT birlphysicalmodel_data_offset = 0;
 class BirlPhysicalModel
 {
 public:
+
+	//(the .h file)
+	/*
+typedef struct {
+  double history[SAMPLEFILTER_TAP_NUM];
+  unsigned int last_index;
+} SampleFilter;
+*/
+/*
+void SampleFilter_init(SampleFilter* f);
+int SampleFilter_put(SampleFilter* f, double input);
+double SampleFilter_get(SampleFilter* f);
+*/
+double history[SAMPLEFILTER_TAP_NUM];
+unsigned int last_index;
+double filter_taps[SAMPLEFILTER_TAP_NUM] = {
+  0.015337447057293471,
+  0.05238235947224811,
+  0.09710845154574158,
+  0.11767459821347348,
+  0.09710845154574158,
+  0.05238235947224811,
+  0.015337447057293471
+};
+
+void SampleFilter_init() {
+  int i;
+  for(i = 0; i < SAMPLEFILTER_TAP_NUM; ++i)
+	{
+	    history[i] = 0;
+	}
+  last_index = 0;
+}
+/*
+void SampleFilter_put(SampleFilter* f, double input) {
+  f->history[f->last_index++] = input;
+  if(f->last_index == SAMPLEFILTER_TAP_NUM)
+    f->last_index = 0;
+}
+*/
+int SampleFilter_put(double input) {
+	return last_index;
+}
+double SampleFilter_get() {
+  double acc = 0;
+  int index = last_index, i;
+  for(i = 0; i < SAMPLEFILTER_TAP_NUM; ++i) {
+    index = index != 0 ? index-1 : SAMPLEFILTER_TAP_NUM-1;
+    acc += history[index] * filter_taps[i];
+  };
+  return acc;
+}
+/*
+
+FIR filter designed with
+ http://t-filter.appspot.com
+
+sampling frequency: 44100 Hz
+
+* 0 Hz - 1700 Hz
+  gain = 1
+  desired ripple = 5 dB
+  actual ripple = 7.496621361725541 dB
+
+* 12000 Hz - 22000 Hz
+  gain = 0
+  desired attenuation = -60 dB
+  actual attenuation = -52.21249526627493 dB
+
+*/
+
     void debug(std::string msg, double in) {
         if (count % 44100 == 0) {
             printf(msg.c_str(), in);
@@ -375,6 +449,7 @@ public:
         pf2_ = initSVF(1000.0, 1.0);
         lp2_ = initSVF(5000.0, 0.5);
         noiseBP_ = initSVF(16000.0, 1.0);
+        SampleFilter_init();
         
         outputGain_ = 1.0;
         noiseGain_ = 0.2;
@@ -427,11 +502,11 @@ SAMPLE tick(SAMPLE in)
 
             debug("%d\n", tubeLengths_[0]);
             // Helps reduce high-pitched noise.
-            // breath = inputBiquad(biquad_, breath);
-            breath = interpolateLinear(shaper(breath, m_drive_), breath, shaperMix_);
-            // breath = inputSVFPeak(pf_, breath);
-            // breath = inputSVFLP(lp_, breath);
-            // breath = inputDCFilter(dcBlocker_, breath);
+            // breath = inputBiquad(biquad_, breath); //Creates noise
+            // breath = interpolateLinear(shaper(breath, m_drive_), breath, shaperMix_); // Creates Noise
+            // breath = inputSVFPeak(pf_, breath); // Very airy sound
+            // breath = inputSVFLP(lp_, breath); // Good sound
+            // breath = inputDCFilter(dcBlocker_, breath); // Noise
 
             for (int i = 0; i < numToneHoles_; i++) {
                 // Index in tubes_[] of tube positioned before toneHoles[i].
@@ -457,14 +532,16 @@ SAMPLE tick(SAMPLE in)
                 // Bell reflection at last tube.
                 if (i == numToneHoles_ - 1) {
                     double bell = accessDelayLine(tubes_[b]->upper);
+                    SampleFilter_put(bell);
+                    bell = SampleFilter_get();
                     // double bell2 = shaper(bell1, m_drive_);
                     // double bell4 = inputSVFPeak(pf2_, bell1);
-                    // bell = inputSVFLP(lp2_, bell);
                     // // Reflection = Inversion + gain reduction + lowpass filtering.
                     // bell = inputSVFLP(lp2_, bell);
                     // bell = inputDCFilter(dcBlocker2_, bell);
                     bellReflected = bell * -0.995;
                     // bellReflected = filter_.tick(bell * -0.995);
+
                 }
             }
 
@@ -531,6 +608,7 @@ protected:
     SVF *pf2_;
     SVF *lp2_;
     SVF *noiseBP_;
+    //SampleFilter *endLP_;
     
     double rb_;
     double originalrb_;

@@ -66,6 +66,8 @@ fun void go( MidiIn min, int id )
         // wait on event
         min => now;
         
+        0.5 => t.breathPressure;
+        
         // print message
         while( min.recv( msg ) )
         {    
