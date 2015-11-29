@@ -508,6 +508,8 @@ SAMPLE tick(SAMPLE in)
             // breath = inputSVFLP(lp_, breath); // Good sound
             // breath = inputDCFilter(dcBlocker_, breath); // Noise
 
+            // comment in for toneholes
+            
             for (int i = 0; i < numToneHoles_; i++) {
                 // Index in tubes_[] of tube positioned before toneHoles[i].
                 int a = i + FRONT_TUBES - 1;

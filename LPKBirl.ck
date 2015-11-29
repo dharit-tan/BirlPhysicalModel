@@ -50,6 +50,8 @@ BirlPhysicalModel t => Gain g1 => dac;
 0 => t.tuning;
 440 => float Fc;
 Fc => t.setFundamental;
+//0.5 => t.breathPressure;
+        
 
 // infinite time loop
 while( true ) 1::second => now;
