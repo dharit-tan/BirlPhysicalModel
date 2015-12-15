@@ -20,9 +20,19 @@
 #include "Birl_Filters.h"
 #include "Birl_Tuning.h"
 #include "Birl_Tube.h"
+#include "filter.h"
+//#include "filterLP.h"
 
-#define SAMPLEFILTER_TAP_NUM 7
+#define MAX_INPUT_LEN   1
+// maximum length of filter than can be handled
+#define MAX_FLT_LEN     63
+// buffer to hold all of the input samples
+#define BUFFER_LEN      (MAX_FLT_LEN - 1 + MAX_INPUT_LEN)
 
+#define FILTER_LEN  13
+
+// number of samples to read per loop
+#define SAMPLES   80 
 
 // declaration of chugin constructor
 CK_DLL_CTOR(birlphysicalmodel_ctor);
@@ -63,7 +73,7 @@ public:
 	//(the .h file)
 	/*
 typedef struct {
-  double history[SAMPLEFILTER_TAP_NUM];
+  double history[FILTER_LEN];
   unsigned int last_index;
 } SampleFilter;
 */
@@ -72,45 +82,154 @@ void SampleFilter_init(SampleFilter* f);
 int SampleFilter_put(SampleFilter* f, double input);
 double SampleFilter_get(SampleFilter* f);
 */
-double history[SAMPLEFILTER_TAP_NUM];
+double history[FILTER_LEN];
 unsigned int last_index;
-double filter_taps[SAMPLEFILTER_TAP_NUM] = {
-  0.015337447057293471,
-  0.05238235947224811,
-  0.09710845154574158,
-  0.11767459821347348,
-  0.09710845154574158,
-  0.05238235947224811,
-  0.015337447057293471
+/*
+double coeffs[FILTER_LEN] = 
+{
+    0.00005756650124215008,
+    0.0027480403647731715,
+    0.007245725515096851,
+    0.01551918874788358,
+    0.02828185793562905,
+    0.04591464434507541,
+    0.06803924257508497,
+    0.09338944279777726,
+    0.11986228282809268,
+    0.144760650278368,
+    0.1652128398616651,
+    0.17866554720337638,
+    0.18335883080811258,
+    0.17866554720337638,
+    0.1652128398616651,
+    0.144760650278368,
+    0.11986228282809268,
+    0.09338944279777726,
+    0.06803924257508497,
+    0.04591464434507541,
+    0.02828185793562905,
+    0.01551918874788358,
+    0.007245725515096851,
+    0.0027480403647731715,
+    0.00005756650124215008
+};
+*/
+double coeffsNorm[FILTER_LEN];
+int print = 0;
+
+double coeffs[FILTER_LEN] = 
+{
+	0.0016929186933120374,
+	0.008679151014906236,
+	0.025364631799549068,
+	0.0531269294889668,
+	0.08679916289959329,
+	0.1150985720075918,
+	0.12621527934255508,
+	0.1150985720075918,
+	0.08679916289959329,
+	0.0531269294889668,
+	0.025364631799549068,
+	0.008679151014906236,
+	0.0016929186933120374
 };
 
+/*
+double coeffs7[ FILTER_LEN ] = 
+    {
+	  0.03428657148508,
+	  0.11709971695302, 
+	  0.21708400126147, 
+	  0.26305921081426, 
+	  0.21708400126147, 
+	  0.03428657148508
+	};
+*/
+// array to hold input samples
+double insamp[ BUFFER_LEN ];
+
+// the FIR filter function
+double firFloat(double in)
+{
+    double acc;     // accumulator for MACs
+    double *coeffp; // pointer to coefficients
+    double *inputp; // pointer to input samples
+    int n;
+    int k;
+    double *input = &in; 
+
+    int length = 1;
+    int filterLength = FILTER_LEN;
+
+    // put the new sample at the high end of the buffer
+    memcpy( &insamp[filterLength - 1], input, length * sizeof(double));
+ 
+    // apply the filter to each input sample
+    // calculate output n
+    coeffp = coeffs;//normalizeCoeffs(coeffs);
+    inputp = &insamp[filterLength - 1];
+    acc = 0;
+    for ( k = 0; k < filterLength; k++ ) {
+        acc += (*coeffp++) * (*inputp--);
+    }
+    double output = acc;
+    // shift input samples back in time for next time
+    memmove( &insamp[0], &insamp[length],
+            (filterLength - 1) * sizeof(double) );
+
+    return output;
+}
+
+void normalizeCoeffs(double* coeffs)
+{
+    double sum = 0.0;
+    for (int i = 0; i < FILTER_LEN; i++)
+    {
+        sum += coeffs[i];
+    }
+
+    double normalizationFactor = 2.0 / sum;
+    printf("sum = %f\n", sum);
+    printf("normalizationFactor = %f\n", normalizationFactor);
+    for (int i = 0; i < FILTER_LEN; i++)
+    {
+        coeffs[i] *= normalizationFactor;
+    }
+
+}
+
+/*
 void SampleFilter_init() {
   int i;
-  for(i = 0; i < SAMPLEFILTER_TAP_NUM; ++i)
+  for(i = 0; i < FILTER_LEN; ++i)
 	{
 	    history[i] = 0;
 	}
   last_index = 0;
 }
-/*
+
 void SampleFilter_put(SampleFilter* f, double input) {
   f->history[f->last_index++] = input;
-  if(f->last_index == SAMPLEFILTER_TAP_NUM)
+  if(f->last_index == FILTER_LEN)
     f->last_index = 0;
 }
-*/
-int SampleFilter_put(double input) {
-	return last_index;
+
+void SampleFilter_put(double input) {
+  history[last_index++] = input;
+  if(last_index == FILTER_LEN)
+    last_index = 0;
 }
+
 double SampleFilter_get() {
   double acc = 0;
   int index = last_index, i;
-  for(i = 0; i < SAMPLEFILTER_TAP_NUM; ++i) {
-    index = index != 0 ? index-1 : SAMPLEFILTER_TAP_NUM-1;
+  for(i = 0; i < FILTER_LEN; ++i) {
+    index = index != 0 ? index-1 : FILTER_LEN-1;
     acc += history[index] * filter_taps[i];
   };
   return acc;
 }
+*/
 /*
 
 FIR filter designed with
@@ -434,8 +553,13 @@ sampling frequency: 44100 Hz
         numTubes_ = MAX_TUBES;
         tubeIndex_ = 0;
 
-        setTuning(EQUAL_TEMPERED);
-        tune(440.0);
+        //setTuning(EQUAL_TEMPERED);
+        tubeLengths_[0] = 50;
+        tubeLengths_[1] = 47;
+		tubes_[0] = initTube(tubeLengths_[0]);
+        tubes_[1] = initTube(tubeLengths_[1]);     
+
+        //tune(440.0);
         
         // reedTable_.setOffset( 0.7 );
         // reedTable_.setSlope( -0.3 );
@@ -449,17 +573,24 @@ sampling frequency: 44100 Hz
         pf2_ = initSVF(1000.0, 1.0);
         lp2_ = initSVF(5000.0, 0.5);
         noiseBP_ = initSVF(16000.0, 1.0);
-        SampleFilter_init();
         
         outputGain_ = 1.0;
         noiseGain_ = 0.2;
 
-        breathPressure_ = 0.0;
+        breathPressure_ = 0.5;
         count = 0;
         min = 0.0;
         max = 0.0;
         m_drive_ = 0.0;
         shaperMix_ = 0.0;
+
+        normalizeCoeffs(coeffs);
+        double sum = 0; 
+        for (int i = 0; i < FILTER_LEN; i++)
+        {
+            sum += coeffs[i];
+        }
+        printf("normalizedSum = %f\n", sum);
     }
     
     double interpolateLinear(double a, double b, double alpha) {
@@ -490,7 +621,7 @@ SAMPLE tick(SAMPLE in)
         for (int t = 0; t < OVERSAMPLE; t++) {
             double breath = breathInterp[t];
             double noise = noiseGain_ * (inputSVFBand(noiseBP_, noise_.tick()));
-            breath += breath * noise;
+            breath += breath * noise; // should be = not +=?
 
             // Calculate the differential pressure = reflected - mouthpiece pressures
             double pressureDiff = accessDelayLine(tubes_[0]->lower) - breath;
@@ -500,7 +631,7 @@ SAMPLE tick(SAMPLE in)
                 printf("breath going out of bounds of -1 to 1: %f\n", breath);
             }
 
-            debug("%d\n", tubeLengths_[0]);
+			//debug("%d\n", tubeLengths_[0]);
             // Helps reduce high-pitched noise.
             // breath = inputBiquad(biquad_, breath); //Creates noise
             // breath = interpolateLinear(shaper(breath, m_drive_), breath, shaperMix_); // Creates Noise
@@ -509,7 +640,6 @@ SAMPLE tick(SAMPLE in)
             // breath = inputDCFilter(dcBlocker_, breath); // Noise
 
             // comment in for toneholes
-            
             for (int i = 0; i < numToneHoles_; i++) {
                 // Index in tubes_[] of tube positioned before toneHoles[i].
                 int a = i + FRONT_TUBES - 1;
@@ -541,6 +671,7 @@ SAMPLE tick(SAMPLE in)
                     // // Reflection = Inversion + gain reduction + lowpass filtering.
                     // bell = inputSVFLP(lp2_, bell);
                     // bell = inputDCFilter(dcBlocker2_, bell);
+                    bell = firFloat(bell);
                     bellReflected = bell * -0.995;
                     // bellReflected = filter_.tick(bell * -0.995);
 
@@ -561,6 +692,52 @@ SAMPLE tick(SAMPLE in)
             }
             inputDelayLine(tubes_[0]->upper, breath);
             inputDelayLine(tubes_[numTubes_-1]->lower, bellReflected);
+            
+
+            /*
+            // comment in for single tube model
+            pap = accessDelayLine(tubes_[0]->upper);
+            pbm = accessDelayLine(tubes_[0]->lower);
+
+            //pbp_[0] = pap;
+            //pam_[0] = pbm;
+            
+            // Sample output at tubes_[SAMPLE_INDEX].
+            outsamp += pap + pbm;// + pam_[0];
+
+            // Bell reflection at last tube.
+            double bell = accessDelayLine(tubes_[0]->upper);
+            //SampleFilter_put(bell);
+            //bell = SampleFilter_get();
+            bell = firFloat(bell);
+            bellReflected = bell * 	-0.995;
+            
+            //printf("sample filter %d = %f\n", 0, history[0]);            
+            
+            printf("tubelength = %d\n", tubeLengths_[0]);
+            printf("pressureDiff = %f\n", pressureDiff);
+            printf("breath = %f\n", breath);
+            printf("pap = %f\n", pap);
+            printf("pbm = %f\n", pbm);
+            printf("bellReflected = %f\n", bellReflected);
+
+            if (print == 0)
+            {
+                for (int i = 0; i < FILTER_LEN; i++)
+                    printf("coeff %d = %f\n", i, coeffs[i]);
+                printf("filter len = %d\n", FILTER_LEN);
+                print = 1;
+            }
+            
+
+            //perform inputs at end
+            //toneHoles_[i]->tick(pthp_[i]);
+            //inputDelayLine(tubes_[0]->lower, pbm);
+            //inputDelayLine(tubes_[0]->upper, pap);
+
+            inputDelayLine(tubes_[0]->upper, breath);
+            inputDelayLine(tubes_[0]->lower, bellReflected);
+            */
         }
         
         count++;
@@ -581,6 +758,7 @@ SAMPLE tick(SAMPLE in)
         outsamp /= (double) OVERSAMPLE;
         outsamp = tanhClip(outsamp);
         outsamp *= outputGain_;
+        //printf("outsamp = %f\n", outsamp);
         return outsamp;
     }
     
@@ -623,8 +801,10 @@ protected:
     double breathPressure_;
     double prevBreathPressure_;
     
-    int count;
+    //int count;
     double min, max;
+public:
+	int count;
 };
 
 
@@ -785,8 +965,17 @@ CK_DLL_TICK(birlphysicalmodel_tick)
     BirlPhysicalModel * c = (BirlPhysicalModel *) OBJ_MEMBER_INT(SELF, birlphysicalmodel_data_offset);
     
     // invoke our tick function; store in the magical out variable
-    if(c) *out = c->tick(in);
-    
+   //if (c->count == 0)
+    {
+    	if(c) *out = c->tick(in);
+    }
+    /*
+    c->count++;
+    if (c->count > 22000)
+    {
+    	c->count = 0;
+    }
+    */
     // yes
     return TRUE;
 }
