@@ -50,7 +50,7 @@ BirlPhysicalModel t => Gain g1 => dac;
 
 //0 => t.tuning;
 440 => float Fc;
-//Fc => t.setFundamental;
+Fc => t.setFundamental;
 //1.0 => t.breathPressure;
 
 // infinite time loop
@@ -66,11 +66,10 @@ fun void go( MidiIn min, int id )
     while( true )
     {
         // wait on event
-        //min => now;
-        1::second => now;
-        //0.75 => t.breathPressure;
+        min => now;
+        //1::second => now;
         // print message
-        /*
+        
         while( min.recv( msg ) )
         {    
             if (msg.data1 == 176) {
@@ -166,6 +165,6 @@ fun void go( MidiIn min, int id )
             // print out midi message with id
             <<< "device", id, ":", msg.data1, msg.data2, msg.data3 >>>;
         }
-        */
+        
     }
 }
