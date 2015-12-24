@@ -292,7 +292,7 @@ sampling frequency: 44100 Hz
     }
 
     void tune(double Fc) {
-        Fc = (tuning[NUM_NOTES-2]/tuning[NUM_NOTES-1]) * Fc;
+        //Fc = (tuning[NUM_NOTES-2]/tuning[NUM_NOTES-1]) * Fc;
         double LS = calcLS(Fc);
         int LC = calcLC(LS);
         double d1 = calcd1(LC, LS);
