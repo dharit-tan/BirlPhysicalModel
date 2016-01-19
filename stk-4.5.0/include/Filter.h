@@ -50,7 +50,7 @@ public:
     gain.  The frequency value should be greater than 0.0 and less
     than or equal to one-half the sample rate.
    */
-  StkFloat phaseDelay( StkFloat frequency );
+  StkFloat phaseDelay( StkFloat frequency );  
 
   //! Return an StkFrames reference to the last output sample frame.
   const StkFrames& lastFrame( void ) const { return lastFrame_; };
@@ -63,7 +63,7 @@ public:
     However, range checking is only performed if _STK_DEBUG_ is
     defined during compilation, in which case an out-of-range value
     will trigger an StkError exception.
-  */
+  */  
   virtual StkFrames& tick( StkFrames& frames, unsigned int channel = 0 ) = 0;
 
 protected:

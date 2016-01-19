@@ -15,6 +15,7 @@ double customTuning[] = {2.519840, 2.244920, 2.000000, 1.887750, 1.681790, 1.498
 int FUNDAMENTAL_INDEX = NUM_NOTES - 2;
 const double MIN_D1 = 1.0; // = 0.002 * 2 * 200
 const double DH_FIRST_GUESS = 1.0;
+const double CM_PER_INCH = 2.54;
 
 static double *tuning;
 
@@ -35,7 +36,7 @@ static double calcg(int thNum) {
 }
 
 static double calcd1(int LC, double LS) {
-    return (LS - (double) LC)/(0.3 * convertToSamples(2.54));
+    return (LS - (double) LC)/(0.3 * convertToSamples(CM_PER_INCH));
     /* return (LS - (double) LC)/0.3; */
 }
 
@@ -59,7 +60,7 @@ static double calcLS(double Fc) {
 static int calclL(double d1, int thNum, double LS) {
     double dH = 1.0 * OVERSAMPLE;
     double g = calcg(thNum);
-    double LSh = (1.0/tuning[thNum]) * LS;
+    double LSh = (1.0/ tuning[thNum]) * LS;
     double LBh = dH * ((d1*d1)/(dH*dH)) - 0.45*d1;
     double z = 0.5 * g * sqrt(1 + 4*(LBh/(g*LSh))) - 0.5*g;
     return (int) (LSh - (z*LSh));

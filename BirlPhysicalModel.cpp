@@ -20,16 +20,16 @@
 #include "Birl_Filters.h"
 #include "Birl_Tuning.h"
 #include "Birl_Tube.h"
-#include "filter.h"
+//#include "filter.h"
 //#include "filterLP.h"
 
 #define MAX_INPUT_LEN   1
 // maximum length of filter than can be handled
-#define MAX_FLT_LEN     63
+#define MAX_FLT_LEN     69
 // buffer to hold all of the input samples
 #define BUFFER_LEN      (MAX_FLT_LEN - 1 + MAX_INPUT_LEN)
 
-#define FILTER_LEN  13
+#define FILTER_LEN  21
 
 // number of samples to read per loop
 #define SAMPLES   80 
@@ -69,22 +69,89 @@ t_CKINT birlphysicalmodel_data_offset = 0;
 class BirlPhysicalModel
 {
 public:
-
-	//(the .h file)
-	/*
-typedef struct {
-  double history[FILTER_LEN];
-  unsigned int last_index;
-} SampleFilter;
-*/
-/*
-void SampleFilter_init(SampleFilter* f);
-int SampleFilter_put(SampleFilter* f, double input);
-double SampleFilter_get(SampleFilter* f);
-*/
 double history[FILTER_LEN];
 unsigned int last_index;
+
+// 37 tap filter for OVERSAMPLE = 4 This shit sucks hard
 /*
+double coeffs[FILTER_LEN] = 
+{
+	-0.007258268326706824,
+	-0.006159641814350422,
+	-0.00785317854765094,
+	-0.00900306986540948,
+	-0.009166748762416365,
+	-0.00792044944004788,
+	-0.0048704409470715975,
+	0.00028800737916629066,
+	0.007693285241350825,
+	0.017294790847480267,
+	0.02883747592670497,
+	0.041846735040827046,
+	0.05565719495531803,
+	0.06946860133545518,
+	0.08240417490974677,
+	0.09358448241572628,
+	0.10221414358661564,
+	0.10766193403352986,
+	0.10952400846032936,
+	0.10766193403352986,
+	0.10221414358661564,
+	0.09358448241572628,
+	0.08240417490974677,
+	0.06946860133545518,
+	0.05565719495531803,
+	0.041846735040827046,
+	0.02883747592670497,
+	0.017294790847480267,
+	0.007693285241350825,
+	0.00028800737916629066,
+	-0.0048704409470715975,
+	-0.00792044944004788,
+	-0.009166748762416365,
+	-0.00900306986540948,
+	-0.00785317854765094,
+	-0.006159641814350422,
+	-0.007258268326706824
+};*/
+
+// 29 tap filter for OVERSAMPLE = 4 This one is kinda ok sometimes
+/*
+double coeffs[FILTER_LEN] = 
+{
+	-0.0029345166830347354,
+	0.0037708996202689025,
+	0.0062917245984244075,
+	0.010611355235668186,
+	0.016493764231629533,
+	0.02376320394463837,
+	0.032213646396652584,
+	0.041504022687404045,
+	0.05119419078954883,
+	0.06076290404210293,
+	0.06963719529785253,
+	0.07725598781739422,
+	0.08311082424703435,
+	0.086797275525987,
+	0.0880564538593294,
+	0.086797275525987,
+	0.08311082424703435,
+	0.07725598781739422,
+	0.06963719529785253,
+	0.06076290404210293,
+	0.05119419078954883,
+	0.041504022687404045,
+	0.032213646396652584,
+	0.02376320394463837,
+	0.016493764231629533,
+	0.010611355235668186,
+	0.0062917245984244075,
+	0.0037708996202689025,
+	-0.0029345166830347354
+};
+*/
+/*
+// 25 tap filter for OVERSAMPLE = 2
 double coeffs[FILTER_LEN] = 
 {
     0.00005756650124215008,
@@ -114,9 +181,66 @@ double coeffs[FILTER_LEN] =
     0.00005756650124215008
 };
 */
-double coeffsNorm[FILTER_LEN];
-int print = 0;
+/*
+// 25 tap filter for OVERSAMPLE = 2
+double coeffs[FILTER_LEN] = 
+{
+	-0.007628019096097595,
+	-0.010079153187982892,
+	-0.013345718037405696,
+	-0.013619063649571635,
+	-0.00866347946214736,
+	0.0032849252934401257,
+	0.022884740693647383,
+	0.049249486806244074,
+	0.07981943179065232,
+	0.11066339769726127,
+	0.1372049775764069,
+	0.1551721664333723,
+	0.16152824309257102,
+	0.1551721664333723,
+	0.1372049775764069,
+	0.11066339769726127,
+	0.07981943179065232,
+	0.04924948680624406,
+	0.022884740693647383,
+	0.0032849252934401213,
+	-0.00866347946214736,
+	-0.013619063649571635,
+	-0.013345718037405705,
+	-0.010079153187982888,
+	-0.007628019096097595
+};
+*/
 
+// 21 tap filter for OVERSAMPLE = 2
+double coeffs[FILTER_LEN] = 
+{
+	0.00040219886655465246,
+	0.015628654176673456,
+	0.0220757217937038,
+	0.0351866979915591,
+	0.05060805026220638,
+	0.06742122599089026,
+	0.0842760861819871,
+	0.09961628495793391,
+	0.11191784205901982,
+	0.1198831658288506,
+	0.12263821162826634,
+	0.1198831658288506,
+	0.11191784205901982,
+	0.09961628495793391,
+	0.0842760861819871,
+	0.06742122599089026,
+	0.05060805026220638,
+	0.0351866979915591,
+	0.0220757217937038,
+	0.015628654176673456,
+	0.00040219886655465246
+};
+
+/*
+// 13 tap filter for OVERSAMPLE = 1
 double coeffs[FILTER_LEN] = 
 {
 	0.0016929186933120374,
@@ -135,7 +259,8 @@ double coeffs[FILTER_LEN] =
 };
 
 /*
-double coeffs7[ FILTER_LEN ] = 
+// 7 tap filter for OVERSAMPLE = 1
+double coeffs[ FILTER_LEN ] = 
     {
 	  0.03428657148508,
 	  0.11709971695302, 
@@ -166,7 +291,7 @@ double firFloat(double in)
  
     // apply the filter to each input sample
     // calculate output n
-    coeffp = coeffs;//normalizeCoeffs(coeffs);
+    coeffp = coeffs;//  Coeffs(coeffs);
     inputp = &insamp[filterLength - 1];
     acc = 0;
     for ( k = 0; k < filterLength; k++ ) {
@@ -188,14 +313,13 @@ void normalizeCoeffs(double* coeffs)
         sum += coeffs[i];
     }
 
-    double normalizationFactor = 2.0 / sum;
+    double normalizationFactor = 1 / sum;
     printf("sum = %f\n", sum);
     printf("normalizationFactor = %f\n", normalizationFactor);
     for (int i = 0; i < FILTER_LEN; i++)
     {
         coeffs[i] *= normalizationFactor;
     }
-
 }
 /*
 
@@ -292,59 +416,103 @@ sampling frequency: 44100 Hz
     }
 
     void tune(double Fc) {
-        //Fc = (tuning[NUM_NOTES-2]/tuning[NUM_NOTES-1]) * Fc;
+        Fc = (tuning[NUM_NOTES-2]/tuning[NUM_NOTES-1]) * Fc;
         double LS = calcLS(Fc);
         int LC = calcLC(LS);
         double d1 = calcd1(LC, LS);
         printf("LC: %d\n", LC);
 
         int prevlL = 0;
-        int correction = 0;
         // Must handle dummy separately.
-        for (int i = 0; i < numTubes_ - 1; i++) {
+        for (int i = 0; i < numTubes_; i++) {
             tubeLengths_[i] = calclL(d1, i, LS) - prevlL;
 
-            if (i == 0) {
+            /*
+            // correct for end reclection 
+            if (i == numTubes_-1) {
                 tubeLengths_[i] -= correction;
-            }
-
-            if (tubeLengths_[i] == 0) {
-                printf("ERROR: Integer delay line lengths clash!!!!! Use a different tuning or try oversampling.\n");
+                if (tubeLengths_[i] <= 0){
+                    tubeLengths_[i] = 1;
+                }
+            }*/
+            /*
+            if (tubeLengths_[i] <= 1) {
+                //printf("ERROR: Integer delay line lengths clash!!!!! Use a different tuning or try oversampling.\n");
                 return;
             }
+            if (i == numTubes_-1){
+            	if (tubeLengths_[i] <= (FILTER_LEN - 1) / 4) 
+            	{
+            		return;
+            	}
+            }
+            */
             // if (tubes_[i] != NULL) {
             //     printf("WANNA BE FREEEEEEE\n");
             //     freeTube(tubes_[i]);
             // }
-
-            if (i == 0) {
-                tubes_[i] = initTube(tubeLengths_[i]);
+            /*
+            if (i == numTubes_-1) {
+                //tubes_[i] = initTube(tubeLengths_[i]);
                 prevlL += tubeLengths_[i] + correction;
-            } else {
-                tubes_[i] = initTube(tubeLengths_[i]);
-                prevlL += tubeLengths_[i];
-            }
-            printf("th %d: lL = %d\n", i, tubeLengths_[i]);
+            } else {*/
+                //tubes_[i] = initTube(tubeLengths_[i]);
+            prevlL += tubeLengths_[i];
+            //}
+            printf("uncorrected th %d: lL = %d\n", i, tubeLengths_[i]);
         }
+        // correct and initialize tubes
+        for (int i = 0; i < numTubes_; i++)
+        {
+        	
+	        int filterCorrection = (FILTER_LEN - 1) / 4;
+	        int toneholeCorrection = 1;
 
+        	if (i == numTubes_-1){
+        		tubeLengths_[i] -= filterCorrection;
+        		tubeLengths_[i] += 1;
+        	}
+        	else if (i % 2 == 0)
+        	{
+        		tubeLengths_[i] -= toneholeCorrection;
+        	}
+
+        	if (tubeLengths_[i] <= 0)
+        	{
+        		tubeLengths_[i] = 1;
+        	}
+        	printf("corrected th %d: lL = %d\n", i, tubeLengths_[i]);
+			
+        	tubes_[i] = initTube(tubeLengths_[i]);
+        }
+        // comment in for dummy tonehole
+        /*
+        if ((int) ((1.0/tuning[numTubes_-1]) * LS) - prevlL - correction <= 0) {
+
+            tubeLengths_[numTubes_-1] = 1;
+        }
+        else
+        {
+            tubeLengths_[numTubes_-1] = (int) ((1.0/tuning[numTubes_-1]) * LS) - prevlL - correction;
+        }
+        
         // Dummy
-        tubeLengths_[numTubes_-1] = (int) ((1.0/tuning[numTubes_-1]) * LS) - prevlL;
         if (tubeLengths_[numTubes_-1] == 0) {
             printf("ERROR: Integer delay line lengths clash!!!!! Use a different tuning or try oversampling.\n");
             return;
         }
         tubes_[numTubes_-1] = initTube(tubeLengths_[numTubes_-1]);
         printf("th %d: lL = %d\n", numTubes_-1, tubeLengths_[numTubes_-1]);
-
-        originalrb_ = convertTocm(d1)/200.0;    // main bore radius
+		*/
+        originalrb_ = convertTocm(d1)/CM_DIAM_TO_METER_RADIUS;    // main bore radius
         rb_ = originalrb_;
         int lL = tubeLengths_[0];
         for (int i = 0; i < numToneHoles_; i++) {
-            originalRth_[i] = convertTocm(calcdH(i, d1, LS, lL))/200.0;
+            originalRth_[i] = convertTocm(calcdH(i, d1, LS, lL))/CM_DIAM_TO_METER_RADIUS;
             rth_[i] = originalRth_[i];
             lL += tubeLengths_[i+1];
         }
-
+        
         printf("rb: %f\n", rb_);
         // printf("tubeLengths:\n");
         // for (int i = 0; i < numTubes_; i++) {
@@ -356,7 +524,7 @@ sampling frequency: 44100 Hz
         for (int i = 0; i < numToneHoles_; i++) {
             lL += tubeLengths_[i];
             double LSh = (1.0/tuning[i]) * LS;
-            printf("th %d rth: %f m, output freq when open: %f\n", i, rth_[i], checkTuning(d1, convertToSamples(rth_[i]*200.0), LSh, lL, calcg(i)));
+            printf("th %d rth: %f m, output freq when open: %f\n", i, rth_[i], checkTuning(d1, convertToSamples(rth_[i]*CM_DIAM_TO_METER_RADIUS), LSh, lL, calcg(i)));
         }
         calcTHCoeffs();
     }
@@ -401,7 +569,7 @@ sampling frequency: 44100 Hz
         scatter_[index] = -pow(newRadius,2) / ( pow(newRadius,2) + 2*pow(rb_,2) );
 
         // Calculate toneHole coefficients.
-        double te = newRadius;    // effective length of the open hole
+        double te = 1.0 * newRadius;    // effective length of the open hole
         thCoeff_[index] = (te*2*(SRATE*OVERSAMPLE) - C_m) / (te*2*(SRATE*OVERSAMPLE) + C_m);
     }
     
@@ -500,10 +668,11 @@ sampling frequency: 44100 Hz
     void calcTHCoeffs() {
         // Calculate initial tone hole three-port scattering coefficients
         for (int i = 0; i < MAX_TONEHOLES; i++) {
-            scatter_[i] = -pow(rth_[i],2) / ( pow(rth_[i],2) + 2*pow(rb_,2) );
+            scatter_[i] = -(rth_[i] * rth_[i]) / ( (rth_[i]* rth_[i]) + (2*rb_ * rb_) );
 
             // Calculate toneHole coefficients and set for initially open.
-            thCoeff_[i] = (rth_[i]*2*(SRATE*OVERSAMPLE) - C_m) / (rth_[i]*2*(SRATE*OVERSAMPLE) + C_m);
+            double te = 1.4 * rth_[i];
+            thCoeff_[i] = (te*2*(SRATE*OVERSAMPLE) - C_m) / (te*2*(SRATE*OVERSAMPLE) + C_m);
 
             // Initialize tone holes.
             toneHoles_[i] = new stk::PoleZero();
@@ -520,13 +689,27 @@ sampling frequency: 44100 Hz
         numTubes_ = MAX_TUBES;
         tubeIndex_ = 0;
 
-        setTuning(EQUAL_TEMPERED);
-        //tubeLengths_[0] = 50;
-        //tubeLengths_[1] = 47;
-		//tubes_[0] = initTube(tubeLengths_[0]);
-        //tubes_[1] = initTube(tubeLengths_[1]);    
-        tune(440.0);
         
+        setTuning(EQUAL_TEMPERED);
+        tune(220.0);
+        
+        /*
+        for (int i = 0; i < numToneHoles_; i++)
+        {
+        	printf("phase delay of %d = %f\n", i, toneHoles_[i]->phaseDelay(80));
+        }
+        */
+
+		/*
+        tubeLengths_[0] = 100;
+        tubes_[0] = initTube(tubeLengths_[0]);
+        tubeLengths_[1] = 100;//- (FILTER_LEN-1)/4;
+        tubes_[1] = initTube(tubeLengths_[1]);
+        setToneHoleIndex(0);
+        setToneHoleRadius(0.004);
+        rb_ = 0.001;
+        calcTHCoeffs();
+		*/
         // reedTable_.setOffset( 0.7 );
         // reedTable_.setSlope( -0.3 );
         
@@ -585,18 +768,19 @@ SAMPLE tick(SAMPLE in)
         double outsamp = 0.0;
         double scatter;
         double bellReflected;
+        //double mouthpieceReflected;
         
         for (int t = 0; t < OVERSAMPLE; t++) {
-            double breath = 0.5;//breathInterp[t];
+            double breath = breathInterp[t];
             double noise = noiseGain_ * (inputSVFBand(noiseBP_, noise_.tick()));
-            breath += breath * noise; // should be = not +=?
+            breath += breath * noise;
 
             // Calculate the differential pressure = reflected - mouthpiece pressures
             double pressureDiff = accessDelayLine(tubes_[0]->lower) - breath;
             double reedLookup = pressureDiff * reedTable( pressureDiff );
             breath = tanhClip(breath + reedLookup);
             if (breath >= 1 || breath <= -1) {
-                printf("breath going out of bounds of -1 to 1: %f\n", breath);
+               // printf("breath going out of bounds of -1 to 1: %f\n", breath);
             }
 
 			//debug("%d\n", tubeLengths_[0]);
@@ -604,8 +788,9 @@ SAMPLE tick(SAMPLE in)
             // breath = inputBiquad(biquad_, breath); //Creates noise
             // breath = interpolateLinear(shaper(breath, m_drive_), breath, shaperMix_); // Creates Noise
             // breath = inputSVFPeak(pf_, breath); // Very airy sound
-            // breath = inputSVFLP(lp_, breath); // Good sound
+            //breath = inputSVFLP(lp_, breath); // Good sound
             // breath = inputDCFilter(dcBlocker_, breath); // Noise
+            //breath = firFloat(breath);
             
             // comment in for toneholes
             for (int i = 0; i < numToneHoles_; i++) {
@@ -629,6 +814,15 @@ SAMPLE tick(SAMPLE in)
                     outsamp += pap + pam_[i];
                 }
 
+                /*
+                // reflection at mouthpiece
+                if (i == 0){
+                	double mouthpiece = accessDelayLine(tubes_[a]->lower);
+                	mouthpiece = firFloat(mouthpiece);
+                	mouthpieceReflected = mouthpiece * 0.995;
+                }
+				*/
+
                 // Bell reflection at last tube.
                 if (i == numToneHoles_ - 1) {
                     double bell = accessDelayLine(tubes_[b]->upper);
@@ -638,10 +832,9 @@ SAMPLE tick(SAMPLE in)
                     // bell = inputSVFLP(lp2_, bell);
                     // bell = inputDCFilter(dcBlocker2_, bell);
                     bell = firFloat(bell);
-                    bellReflected = bell * -0.995;
+                    bellReflected = bell * REFLECTION_DECAY_FACTOR;
                     // bellReflected = filter_.tick(bell * -0.995);
                     //printf("bellReflected = %f\n", bellReflected);
-
                 }
                 /*
                 printf("tube %d length = %d\n", i, tubeLengths_[i]);
@@ -693,12 +886,12 @@ SAMPLE tick(SAMPLE in)
 
             inputDelayLine(tubes_[0]->upper, breath);
             inputDelayLine(tubes_[0]->lower, bellReflected);
-            */
+            
 
             // print statements for filter testing
             
             //printf("sample filter %d = %f\n", 0, history[0]);            
-            
+            */
 
             /*
             if (print == 0)
@@ -729,6 +922,7 @@ SAMPLE tick(SAMPLE in)
         outsamp /= (double) OVERSAMPLE;
         outsamp = tanhClip(outsamp);
         outsamp *= outputGain_;
+        //outsamp = inputSVFLP(lp_, outsamp);
         //printf("outsamp = %f\n", outsamp);
         return outsamp;
     }
@@ -1088,6 +1282,7 @@ CK_DLL_MFUN(birlphysicalmodel_setTuning)
     // get our c++ class pointer
     BirlPhysicalModel * bcdata = (BirlPhysicalModel *) OBJ_MEMBER_INT(SELF, birlphysicalmodel_data_offset);
     // set the return value
+    printf("yo this shit is tuing");
     bcdata->setTuningWrapper(GET_NEXT_INT(ARGS));
 }
 
